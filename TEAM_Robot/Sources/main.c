@@ -85,6 +85,8 @@
 #include "MCUC1.h"
 #include "ADC_Bat.h"
 #include "TmDt1.h"
+#include "Bit1.h"
+#include "BitIoLdd27.h"
 #include "IFsh1.h"
 #include "IntFlashLdd1.h"
 #include "BUZ1.h"
