@@ -1,7 +1,7 @@
-/Debug/
-/Genearated_Code/
-/.settings/
-/Documentation/
+Debug/
+Genearated_Code/
+.settings/
+Documentation/
 *.g_c
 *.g_x
 ProjectInfo.xml
