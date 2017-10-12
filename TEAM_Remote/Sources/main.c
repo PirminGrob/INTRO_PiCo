@@ -90,7 +90,7 @@ int main(void)
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
-
+  *((int*)0x0) = 10;
   APP_Start();
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
