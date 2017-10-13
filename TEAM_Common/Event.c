@@ -45,10 +45,12 @@ void EVNT_ClearEvent(EVNT_Handle event) {
 
 bool EVNT_EventIsSet(EVNT_Handle event) {
   /*! \todo Make it reentrant */
+	bool isSet;
 	CS1_CriticalVariable();
 	CS1_EnterCritical();
-   return GET_EVENT(event);
+   isSet= GET_EVENT(event);
    CS1_ExitCritical();
+   return isSet;
 }
 
 bool EVNT_EventIsSetAutoClear(EVNT_Handle event) {
@@ -91,11 +93,14 @@ void EVNT_HandleEvent(void (*callback)(EVNT_Handle), bool clearEvent) {
 void EVNT_Init(void) {
   uint8_t i;
 
+  //CS1_CriticalVariable();
+  //CS1_EnterCritical();
   i = 0;
   do {
     EVNT_Events[i] = 0; /* initialize data structure */
     i++;
   } while(i<sizeof(EVNT_Events)/sizeof(EVNT_Events[0]));
+  //CS1_ExitCritical();
 }
 
 void EVNT_Deinit(void) {
