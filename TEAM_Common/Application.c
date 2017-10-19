@@ -217,7 +217,7 @@ void APP_Start(void) {
   //EVNT_SetEvent(EVNT_STARTUP);
   for(;;) {
 	  //LED1_Neg();
-	  WAIT1_Waitms(10000);
+	  //WAIT1_Waitms(100);
 	  KEY_Scan();
 	  EVNT_HandleEvent(APP_EventHandler,TRUE);
 	  CLS1_SendStr("Hallloooooo Buuuubeeeeeleeee",CLS1_GetStdio()->stdOut);
