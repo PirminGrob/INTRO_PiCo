@@ -98,6 +98,36 @@ void APP_EventHandler(EVNT_Handle event) {
     BtnMsg(1, "pressed");
      break;
 #endif
+#if PL_CONFIG_NOF_KEYS>=2
+  case EVNT_SW2_PRESSED:
+    BtnMsg(2, "pressed");
+     break;
+#endif
+#if PL_CONFIG_NOF_KEYS>=3
+  case EVNT_SW3_PRESSED:
+    BtnMsg(3, "pressed");
+     break;
+#endif
+#if PL_CONFIG_NOF_KEYS>=4
+  case EVNT_SW4_PRESSED:
+    BtnMsg(4, "pressed");
+     break;
+#endif
+#if PL_CONFIG_NOF_KEYS>=5
+  case EVNT_SW5_PRESSED:
+    BtnMsg(5, "pressed");
+     break;
+#endif
+#if PL_CONFIG_NOF_KEYS>=6
+  case EVNT_SW6_PRESSED:
+    BtnMsg(6, "pressed");
+     break;
+#endif
+#if PL_CONFIG_NOF_KEYS>=7
+  case EVNT_SW7_PRESSED:
+    BtnMsg(7, "pressed");
+     break;
+#endif
     default:
       break;
    } /* switch */
@@ -188,6 +218,7 @@ void APP_Start(void) {
   for(;;) {
 	  //LED1_Neg();
 	  //WAIT1_Waitms(10000);
+	  KEY_Scan();
 	  EVNT_HandleEvent(APP_EventHandler,TRUE);
   }
 }

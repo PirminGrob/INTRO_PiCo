@@ -184,5 +184,5 @@ void KEY_Init(void) {
 /*! \brief Key driver de-initialization */
 void KEY_Deinit(void) {
   /* nothing needed for now */
-}
+}p
 #endif /* PL_HAS_KEYS */
