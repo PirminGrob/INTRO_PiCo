@@ -39,6 +39,9 @@
 #include "BitIoLdd2.h"
 #include "SW1.h"
 #include "BitIoLdd3.h"
+#include "TI1.h"
+#include "TimerIntLdd1.h"
+#include "TU1.h"
 #include "CLS1.h"
 #include "RTT1.h"
 #include "LED_IR.h"
@@ -135,6 +138,22 @@ void Cpu_OnNMIINT(void);
 ** ===================================================================
 */
 void QuadInt_OnInterrupt(void);
+
+/*
+** ===================================================================
+**     Event       :  TI1_OnInterrupt (module Events)
+**
+**     Component   :  TI1 [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TI1_OnInterrupt(void);
 
 /* END Events */
 
