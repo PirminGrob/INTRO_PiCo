@@ -95,7 +95,7 @@ void APP_EventHandler(EVNT_Handle event) {
     break;
 #if PL_CONFIG_NOF_KEYS>=1
   case EVNT_SW1_PRESSED:
-    BtnMsg(1, "pressed");
+    BtnMsg(1, " ");
      break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=2
@@ -220,7 +220,7 @@ void APP_Start(void) {
 	  //WAIT1_Waitms(100);
 	  KEY_Scan();
 	  EVNT_HandleEvent(APP_EventHandler,TRUE);
-	  CLS1_SendStr("Hallloooooo Buuuubeeeeeleeee",CLS1_GetStdio()->stdOut);
+	  //CLS1_SendStr("Hallloooooo Buuuubeeeeeleeee",CLS1_GetStdio()->stdOut);
 
   }
 }
