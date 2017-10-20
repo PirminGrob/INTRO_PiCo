@@ -130,7 +130,7 @@
  * ******************************************************************/
 static void SHELL_SendChar(uint8_t ch) {
 #if SHELL_CONFIG_HAS_SHELL_RTT
-  CLS1_SendCharFct(ch, RTT1_SendChar); /* blocking version with timeout */
+  CLS1_SendCh(ch, RTT1_SendChar); /* blocking version with timeout */
   //RTT1_SendChar(ch); /* this one is not blocking, will loose characters if sending too fast */
 #endif
 #if SHELL_CONFIG_HAS_SHELL_UART
