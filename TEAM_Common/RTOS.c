@@ -11,7 +11,10 @@
 #include "Application.h"
 
 void RTOS_Init(void) {
-  /*! \todo Create tasks here */
+	BaseType_t res;
+	  xTaskHandle taskHndl;
+	  res=xTaskCreate(PiCo_Blinky_Task, "PiCoB", configMINIMAL_STACK_SIZE+50, (void * ) NULL, tskIDLE_PRIORITY+1, &taskHndl);
+	  if (res != pdPASS){}
 }
 
 void RTOS_Deinit(void) {

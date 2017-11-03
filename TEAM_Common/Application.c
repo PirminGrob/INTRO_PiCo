@@ -210,20 +210,44 @@ static void APP_AdoptToHardware(void) {
 #endif
 }
 
+void PiCo_Blinky_Task_2(void * pvParameters){
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+	for(uint8_t i=0;i<(int)pvParameters;i++){
+		LED2_Neg();
+		vTaskDelayUntil(&xLastWakeTime, 800/portTICK_PERIOD_MS);
+	}
+	vTaskDelete(NULL);
+	for(;;);
+}
+
+void PiCo_Blinky_Task(void * pvParameters){
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+	BaseType_t res;
+	xTaskHandle taskHndl;
+	res=xTaskCreate(PiCo_Blinky_Task_2, "PiCoB2", configMINIMAL_STACK_SIZE+50, (void * ) 10, tskIDLE_PRIORITY+2, &taskHndl);
+	if (res != pdPASS){}
+	//vTaskDelay(2000/portTICK_PERIOD_MS);
+	//vTaskDelete(taskHndl);
+	for(;;){
+		LED1_Neg();
+		vTaskDelayUntil(&xLastWakeTime, 500/portTICK_PERIOD_MS);
+	}
+}
+
 void APP_Start(void) {
   PL_Init();
   APP_AdoptToHardware();
   __asm volatile("cpsie i"); /* enable interrupts */
   //EVNT_SetEvent(EVNT_STARTUP);
-  for(;;) {
+  //for(;;) {
 	  //LED1_Neg();
 	  //WAIT1_Waitms(100);
-	  KEY_Scan();
+	  //KEY_Scan();
 	  //EVNT_HandleEvent(APP_EventHandler,TRUE);
 	  //BUZ_Play(BUZ_TUNE_WELCOME);
 	  //CLS1_SendStr("Hallloooooo Buuuubeeeeeleeee",CLS1_GetStdio()->stdOut);
 
-  }
+  //}
 }
 
 
