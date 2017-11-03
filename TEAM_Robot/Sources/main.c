@@ -41,6 +41,8 @@
 #include "BitIoLdd20.h"
 #include "MCP4728_RDY.h"
 #include "BitIoLdd21.h"
+#include "FRTOS1.h"
+#include "RTOSCNTRLDD1.h"
 #include "TI1.h"
 #include "TimerIntLdd1.h"
 #include "TU1.h"

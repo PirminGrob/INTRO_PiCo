@@ -219,7 +219,8 @@ void APP_Start(void) {
 	  //LED1_Neg();
 	  //WAIT1_Waitms(100);
 	  KEY_Scan();
-	  EVNT_HandleEvent(APP_EventHandler,TRUE);
+	  //EVNT_HandleEvent(APP_EventHandler,TRUE);
+	  //BUZ_Play(BUZ_TUNE_WELCOME);
 	  //CLS1_SendStr("Hallloooooo Buuuubeeeeeleeee",CLS1_GetStdio()->stdOut);
 
   }
