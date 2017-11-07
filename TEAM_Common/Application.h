@@ -19,6 +19,10 @@ void APP_EventHandler(EVNT_Handle event);
 
 void PiCo_Blinky_Task(void * pvParameters);
 
+void PiCo_Key_Task(void * pvParameters);
+
+void PiCo_Event_Task(void * pvParameters);
+
 void APP_Start(void);
 
 void LED_HeartBeat(void *p);

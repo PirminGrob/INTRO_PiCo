@@ -12,13 +12,26 @@
 
 void RTOS_Init(void) {
 	BaseType_t res;
-	  xTaskHandle taskHndl;
-	  res=xTaskCreate(PiCo_Blinky_Task, "PiCoB", configMINIMAL_STACK_SIZE+50, (void * ) NULL, tskIDLE_PRIORITY+1, &taskHndl);
-	  if (res != pdPASS){}
+	xTaskHandle taskHndl;
+	res = xTaskCreate(PiCo_Blinky_Task, "PiCoB", configMINIMAL_STACK_SIZE + 50,
+			(void *) NULL, tskIDLE_PRIORITY, &taskHndl);
+	if (res != pdPASS) {
+	}
+
+	res = xTaskCreate(PiCo_Key_Task, "PiCoKey", configMINIMAL_STACK_SIZE + 100,
+			(void *) NULL, tskIDLE_PRIORITY, NULL);
+	if (res != pdPASS) {
+	}
+
+	res = xTaskCreate(PiCo_Event_Task, "PiCoEvent",
+			configMINIMAL_STACK_SIZE + 100, (void *) NULL, tskIDLE_PRIORITY + 1,
+			NULL);
+	if (res != pdPASS) {
+	}
 }
 
 void RTOS_Deinit(void) {
-  /* nothing needed for now */
+	/* nothing needed for now */
 }
 
 #endif /* PL_CONFIG_HAS_RTOS */

@@ -12,7 +12,7 @@
 #include "Platform.h"
 #if PL_CONFIG_HAS_RTOS
 /*! \brief Initializes the RTOS module */
-void  (void);
+void RTOS_Init(void);
 
 /*! \brief De-Initializes the RTOS module */
 void RTOS_Deinit(void);

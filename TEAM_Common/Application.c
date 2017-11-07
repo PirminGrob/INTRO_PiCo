@@ -30,6 +30,7 @@
 #if PL_CONFIG_HAS_RTOS
   #include "FRTOS1.h"
   #include "RTOS.h"
+#include "task.h"
 #endif
 #if PL_CONFIG_HAS_QUADRATURE
   #include "Q4CLeft.h"
@@ -96,38 +97,80 @@ void APP_EventHandler(EVNT_Handle event) {
     break;
 #if PL_CONFIG_NOF_KEYS>=1
   case EVNT_SW1_PRESSED:
-    BtnMsg(1, " ");
+    BtnMsg(1, "Pressed");
      break;
+  case EVNT_SW1_LPRESSED:
+      BtnMsg(1, "long pressed ");
+       break;
+  case EVNT_SW1_RELEASED:
+      BtnMsg(1, "released");
+       break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=2
   case EVNT_SW2_PRESSED:
-    BtnMsg(2, "pressed");
+    BtnMsg(2, "Pressed");
      break;
+  case EVNT_SW2_LPRESSED:
+      BtnMsg(2, "long pressed ");
+       break;
+  case EVNT_SW2_RELEASED:
+      BtnMsg(2, "released");
+       break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=3
   case EVNT_SW3_PRESSED:
-    BtnMsg(3, "pressed");
+    BtnMsg(3, "Pressed");
      break;
+  case EVNT_SW3_LPRESSED:
+      BtnMsg(3, "long pressed ");
+       break;
+  case EVNT_SW3_RELEASED:
+      BtnMsg(3, "released");
+       break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=4
   case EVNT_SW4_PRESSED:
-    BtnMsg(4, "pressed");
+    BtnMsg(4, "Pressed");
      break;
+  case EVNT_SW4_LPRESSED:
+      BtnMsg(4, "long pressed ");
+       break;
+  case EVNT_SW4_RELEASED:
+      BtnMsg(4, "released");
+       break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=5
   case EVNT_SW5_PRESSED:
-    BtnMsg(5, "pressed");
+    BtnMsg(5, "Pressed");
      break;
+  case EVNT_SW5_LPRESSED:
+      BtnMsg(5, "long pressed ");
+       break;
+  case EVNT_SW5_RELEASED:
+      BtnMsg(5, "released");
+       break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=6
   case EVNT_SW6_PRESSED:
-    BtnMsg(6, "pressed");
+    BtnMsg(6, "Pressed");
      break;
+  case EVNT_SW6_LPRESSED:
+      BtnMsg(6, "long pressed ");
+       break;
+  case EVNT_SW6_RELEASED:
+      BtnMsg(6, "released");
+       break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=7
   case EVNT_SW7_PRESSED:
-    BtnMsg(7, "pressed");
+    BtnMsg(7, "Pressed");
      break;
+  case EVNT_SW7_LPRESSED:
+      BtnMsg(7, "long pressed ");
+       break;
+  case EVNT_SW7_RELEASED:
+      BtnMsg(7, "released");
+       break;
 #endif
     default:
       break;
@@ -212,27 +255,73 @@ static void APP_AdoptToHardware(void) {
 }
 
 void LED_HeartBeat(void *p){
-	(void) p;
+	(void) p;//Compiler keine Warnung
 	LED_Neg(1);
 	TRG_SetTrigger(TRG_LED_BLINK, 500/TRG_TICKS_MS, LED_HeartBeat, NULL);
+}
+
+void PiCo_Blinky_Task_2(void * pvParameters){
+     TickType_t xLastWakeTime = xTaskGetTickCount();
+     for(;;){
+         LED2_Neg();
+         vTaskDelayUntil(&xLastWakeTime, 800/portTICK_PERIOD_MS);
+     }
+     //vTaskDelete(NULL);
+}
+
+void PiCo_Blinky_Task(void * pvParameters){
+     TickType_t xLastWakeTime = xTaskGetTickCount();
+     BaseType_t res;
+     xTaskHandle taskHndl;
+     res=xTaskCreate(PiCo_Blinky_Task_2, "PiCoB2", configMINIMAL_STACK_SIZE+50, (void * ) 10, tskIDLE_PRIORITY+2, &taskHndl);
+     if (res != pdPASS){}
+     //vTaskDelay(2000/portTICK_PERIOD_MS);
+     //vTaskDelete(taskHndl);
+     for(;;){
+         LED1_Neg();
+         vTaskDelayUntil(&xLastWakeTime, 500/portTICK_PERIOD_MS);
+     }
+}
+
+
+void PiCo_Key_Task(void * pvParameters){
+     //TickType_t xLastWakeTime = xTaskGetTickCount();
+     //if (res != pdPASS){}
+     //vTaskDelay(2000/portTICK_PERIOD_MS);
+     //vTaskDelete(taskHndl);
+     for(;;){
+    	 KEY_Scan();
+         vTaskDelay(100/portTICK_PERIOD_MS);
+     }
+}
+
+void PiCo_Event_Task(void * pvParameters){
+     //TickType_t xLastWakeTime = xTaskGetTickCount();
+     //if (res != pdPASS){}
+     //vTaskDelay(2000/portTICK_PERIOD_MS);
+     //vTaskDelete(taskHndl);
+     for(;;){
+    	 EVNT_HandleEvent(APP_EventHandler,TRUE);
+         vTaskDelay(50/portTICK_PERIOD_MS);
+     }
 }
 
 void APP_Start(void) {
   PL_Init();
   APP_AdoptToHardware();
-  TRG_SetTrigger(TRG_LED_BLINK, 5000/TRG_TICKS_MS, LED_HeartBeat, NULL);
+  //TRG_SetTrigger(TRG_LED_BLINK, 5000/TRG_TICKS_MS, LED_HeartBeat, NULL);
   __asm volatile("cpsie i"); /* enable interrupts */
   //EVNT_SetEvent(EVNT_STARTUP);
 
-  for(;;) {
+  //for(;;) {
 	  //LED1_Neg();
 	  //WAIT1_Waitms(100);
-	  KEY_Scan();
-	  EVNT_HandleEvent(APP_EventHandler,TRUE);
+	  //KEY_Scan();
+	  //EVNT_HandleEvent(APP_EventHandler,TRUE);
 	  //BUZ_Play(BUZ_TUNE_WELCOME);
 	  //CLS1_SendStr("Hallloooooo Buuuubeeeeeleeee",CLS1_GetStdio()->stdOut);
 
-  }
+  //}
 }
 
 
