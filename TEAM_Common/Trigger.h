@@ -21,6 +21,7 @@
 typedef enum {
   /*! \todo Extend the list of triggers as needed */
   TRG_BUZ_BEEP, /*!< Buzzer beep */
+  TRG_LED_BLINK,
   TRG_KEYPRESS, /*!< key debounce */
   TRG_BUZ_TUNE, /*!< buzzer tune */
   TRG_NOF_TRIGGERS /*!< Must be last! */

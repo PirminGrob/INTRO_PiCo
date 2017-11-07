@@ -21,4 +21,6 @@ void PiCo_Blinky_Task(void * pvParameters);
 
 void APP_Start(void);
 
+void LED_HeartBeat(void *p);
+
 #endif /* SOURCES_FS2016_COMMON_APPLICATION_H_ */
