@@ -1,16 +1,18 @@
 /* ###################################################################
 **     Filename    : Events.h
-**     Project     : INTRO_Robot_Master
-**     Processor   : MK22FX512VLQ12
+**     Project     : TEAM_Robot
+**     Processor   : MK22FX512VLK12
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-09-20, 21:03, # CodeGen: 0
+**     Date/Time   : 2017-11-07, 15:52, # CodeGen: 13
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
 **     Contents    :
-**         Cpu_OnNMIINT - void Cpu_OnNMIINT(void);
+**         QuadInt_OnInterrupt - void QuadInt_OnInterrupt(void);
+**         TI1_OnInterrupt     - void TI1_OnInterrupt(void);
+**         Cpu_OnNMIINT        - void Cpu_OnNMIINT(void);
 **
 ** ###################################################################*/
 /*!
@@ -33,6 +35,14 @@
 #include "PE_Error.h"
 #include "PE_Const.h"
 #include "IO_Map.h"
+#include "CLS1.h"
+#include "MCUC1.h"
+#include "WAIT1.h"
+#include "CS1.h"
+#include "HF1.h"
+#include "XF1.h"
+#include "KIN1.h"
+#include "UTIL1.h"
 #include "LEDPin1.h"
 #include "BitIoLdd1.h"
 #include "LEDPin2.h"
@@ -44,12 +54,11 @@
 #include "BitIoLdd20.h"
 #include "MCP4728_RDY.h"
 #include "BitIoLdd21.h"
-#include "FRTOS1.h"
-#include "RTOSCNTRLDD1.h"
 #include "TI1.h"
 #include "TimerIntLdd1.h"
 #include "TU1.h"
-#include "CLS1.h"
+#include "BUZ1.h"
+#include "BitIoLdd4.h"
 #include "RTT1.h"
 #include "LED_IR.h"
 #include "LEDpin3.h"
@@ -94,41 +103,15 @@
 #include "CDC1.h"
 #include "Tx1.h"
 #include "Rx1.h"
-#include "USB0.h"
-#include "MCUC1.h"
-#include "ADC_Bat.h"
-#include "TmDt1.h"
 #include "IFsh1.h"
 #include "IntFlashLdd1.h"
-#include "BUZ1.h"
-#include "BitIoLdd4.h"
-#include "WAIT1.h"
-#include "CS1.h"
-#include "HF1.h"
-#include "XF1.h"
-#include "UTIL1.h"
-#include "KIN1.h"
+#include "USB0.h"
+#include "ADC_Bat.h"
+#include "TmDt1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
-
-/*
-** ===================================================================
-**     Event       :  Cpu_OnNMIINT (module Events)
-**
-**     Component   :  Cpu [MK22FN1M0LQ12]
-*/
-/*!
-**     @brief
-**         This event is called when the Non maskable interrupt had
-**         occurred. This event is automatically enabled when the [NMI
-**         interrupt] property is set to 'Enabled'.
-*/
-/* ===================================================================*/
-void Cpu_OnNMIINT(void);
-
-
 
 /*
 ** ===================================================================
@@ -162,64 +145,21 @@ void QuadInt_OnInterrupt(void);
 */
 void TI1_OnInterrupt(void);
 
-void FRTOS1_vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName);
 /*
 ** ===================================================================
-**     Event       :  FRTOS1_vApplicationStackOverflowHook (module Events)
+**     Event       :  Cpu_OnNMIINT (module Events)
 **
-**     Component   :  FRTOS1 [FreeRTOS]
-**     Description :
-**         if enabled, this hook will be called in case of a stack
-**         overflow.
-**     Parameters  :
-**         NAME            - DESCRIPTION
-**         pxTask          - Task handle
-**       * pcTaskName      - Pointer to task name
-**     Returns     : Nothing
-** ===================================================================
+**     Component   :  Cpu [MK22FN1M0LK12]
 */
+/*!
+**     @brief
+**         This event is called when the Non maskable interrupt had
+**         occurred. This event is automatically enabled when the [NMI
+**         interrupt] property is set to 'Enabled'.
+*/
+/* ===================================================================*/
+void Cpu_OnNMIINT(void);
 
-void FRTOS1_vApplicationTickHook(void);
-/*
-** ===================================================================
-**     Event       :  FRTOS1_vApplicationTickHook (module Events)
-**
-**     Component   :  FRTOS1 [FreeRTOS]
-**     Description :
-**         If enabled, this hook will be called by the RTOS for every
-**         tick increment.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-
-void FRTOS1_vApplicationIdleHook(void);
-/*
-** ===================================================================
-**     Event       :  FRTOS1_vApplicationIdleHook (module Events)
-**
-**     Component   :  FRTOS1 [FreeRTOS]
-**     Description :
-**         If enabled, this hook will be called when the RTOS is idle.
-**         This might be a good place to go into low power mode.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-
-void FRTOS1_vApplicationMallocFailedHook(void);
-/*
-** ===================================================================
-**     Event       :  FRTOS1_vApplicationMallocFailedHook (module Events)
-**
-**     Component   :  FRTOS1 [FreeRTOS]
-**     Description :
-**         If enabled, the RTOS will call this hook in case memory
-**         allocation failed.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
 
 /* END Events */
 
