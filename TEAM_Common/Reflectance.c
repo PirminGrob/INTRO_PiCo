@@ -167,6 +167,9 @@ static void REF_MeasureRaw(SensorTimeType raw[REF_NOF_SENSORS]) {
         cnt++;
       }
     }
+    if(timerVal>=3750){///Counter Frequency * 0.002s
+    	break;
+    }
   } while(cnt!=REF_NOF_SENSORS);
   taskEXIT_CRITICAL();
   LED_IR_Off(); /* IR LED's off */
@@ -596,7 +599,7 @@ void REF_Init(void) {
   refState = REF_STATE_INIT;
   timerHandle = RefCnt_Init(NULL);
   /*! \todo You might need to adjust priority or other task settings */
-  if (xTaskCreate(ReflTask, "Refl", 600/sizeof(StackType_t), NULL, tskIDLE_PRIORITY, NULL) != pdPASS) {
+  if (xTaskCreate(ReflTask, "Refl", 600/sizeof(StackType_t), NULL, tskIDLE_PRIORITY+2, NULL) != pdPASS) {
     for(;;){} /* error */
   }
 }

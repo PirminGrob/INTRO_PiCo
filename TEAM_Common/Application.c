@@ -94,13 +94,24 @@ void APP_EventHandler(EVNT_Handle event) {
     break;
   case EVNT_LED_HEARTBEAT:
     LED2_Neg();
+
     break;
 #if PL_CONFIG_NOF_KEYS>=1
   case EVNT_SW1_PRESSED:
     BtnMsg(1, "Pressed");
+#if PL_CONFIG_HAS_BUZZER
+    BUZ_PlayTune(BUZ_TUNE_BUTTON);
+#endif
      break;
   case EVNT_SW1_LPRESSED:
       BtnMsg(1, "long pressed ");
+#if PL_CONFIG_HAS_REFLECTANCE
+      REF_CalibrateStartStop();
+#endif
+
+#if PL_CONFIG_HAS_BUZZER
+    BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+#endif
        break;
   case EVNT_SW1_RELEASED:
       BtnMsg(1, "released");
@@ -257,16 +268,17 @@ static void APP_AdoptToHardware(void) {
 void LED_HeartBeat(void *p){
 	(void) p;//Compiler keine Warnung
 	LED_Neg(1);
-	TRG_SetTrigger(TRG_LED_BLINK, 500/TRG_TICKS_MS, LED_HeartBeat, NULL);
+	TRG_SetTrigger(TRG_LED_BLINK, 250/TRG_TICKS_MS, LED_HeartBeat, NULL);
 }
 
 void PiCo_Blinky_Task_2(void * pvParameters){
+	(void) pvParameters;//Compiler keine Warnung
      TickType_t xLastWakeTime = xTaskGetTickCount();
      for(;;){
          LED2_Neg();
-         vTaskDelayUntil(&xLastWakeTime, 800/portTICK_PERIOD_MS);
+         vTaskDelayUntil(&xLastWakeTime, 2000/portTICK_PERIOD_MS);
      }
-     //vTaskDelete(NULL);
+     vTaskDelete(NULL);
 }
 
 void PiCo_Blinky_Task(void * pvParameters){
@@ -275,8 +287,8 @@ void PiCo_Blinky_Task(void * pvParameters){
      xTaskHandle taskHndl;
      res=xTaskCreate(PiCo_Blinky_Task_2, "PiCoB2", configMINIMAL_STACK_SIZE+50, (void * ) 10, tskIDLE_PRIORITY+2, &taskHndl);
      if (res != pdPASS){}
-     //vTaskDelay(2000/portTICK_PERIOD_MS);
-     //vTaskDelete(taskHndl);
+     vTaskDelay(2000/portTICK_PERIOD_MS);
+    // vTaskDelete(taskHndl);
      for(;;){
          LED1_Neg();
          vTaskDelayUntil(&xLastWakeTime, 500/portTICK_PERIOD_MS);

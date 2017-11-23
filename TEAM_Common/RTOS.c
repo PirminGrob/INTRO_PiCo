@@ -1,5 +1,5 @@
 /**
- * \file
+0 * \file
  * \brief Real Time Operating System (RTOS) main program.
  * \author Erich Styger, erich.styger@hslu.ch
  */
@@ -13,7 +13,8 @@
 void RTOS_Init(void) {
 	BaseType_t res;
 	xTaskHandle taskHndl;
-	res = xTaskCreate(PiCo_Blinky_Task, "PiCoB", configMINIMAL_STACK_SIZE + 50,
+
+	res = xTaskCreate(PiCo_Blinky_Task, "PiCoB", configMINIMAL_STACK_SIZE + 100,
 			(void *) NULL, tskIDLE_PRIORITY, &taskHndl);
 	if (res != pdPASS) {
 	}

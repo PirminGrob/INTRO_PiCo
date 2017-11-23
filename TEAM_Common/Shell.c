@@ -361,32 +361,44 @@ void SHELL_ParseCmd(uint8_t *cmd) {
 
 #if PL_CONFIG_HAS_RTOS
 static void ShellTask(void *pvParameters) {
-  int i;
-  /*! \todo Extend as needed */
+	  int i;
+	  unsigned char p[30];
+	  unsigned char* msg;
+	  /*! \todo Extend as needed */
 
-  (void)pvParameters; /* not used */
-  /* initialize buffers */
-  for(i=0;i<sizeof(ios)/sizeof(ios[0]);i++) {
-    ios[i].buf[0] = '\0';
-  }
-  SHELL_SendString("Shell task started!\r\n");
-  (void)CLS1_ParseWithCommandTable((unsigned char*)CLS1_CMD_HELP, ios[0].stdio, CmdParserTable);
-  for(;;) {
-    /* process all I/Os */
-    for(i=0;i<sizeof(ios)/sizeof(ios[0]);i++) {
-      (void)CLS1_ReadAndParseWithCommandTable(ios[i].buf, ios[i].bufSize, ios[i].stdio, CmdParserTable);
-    }
-#if PL_CONFIG_HAS_RADIO && RNET_CONFIG_REMOTE_STDIO
-    RSTDIO_Print(SHELL_GetStdio()); /* dispatch incoming messages */
-#endif
-#if PL_CONFIG_HAS_SHELL_QUEUE && PL_CONFIG_SQUEUE_SINGLE_CHAR
-    {
-        /*! \todo Handle shell queue */
-    }
-#elif PL_CONFIG_HAS_SHELL_QUEUE /* !PL_CONFIG_SQUEUE_SINGLE_CHAR */
-    {
-      /*! \todo Handle shell queue */
-   }
+	  (void)pvParameters; /* not used */
+	  /* initialize buffers */
+	  for(i=0;i<sizeof(ios)/sizeof(ios[0]);i++) {
+	    ios[i].buf[0] = '\0';
+	  }
+	  SHELL_SendString("Shell task started!\r\n");
+	  (void)CLS1_ParseWithCommandTable((unsigned char*)CLS1_CMD_HELP, ios[0].stdio, CmdParserTable);
+	  for(;;) {
+	    /* process all I/Os */
+	    for(i=0;i<sizeof(ios)/sizeof(ios[0]);i++) {
+	      (void)CLS1_ReadAndParseWithCommandTable(ios[i].buf, ios[i].bufSize, ios[i].stdio, CmdParserTable);
+	    }
+	#if PL_CONFIG_HAS_RADIO && RNET_CONFIG_REMOTE_STDIO
+	    RSTDIO_Print(SHELL_GetStdio()); /* dispatch incoming messages */
+	#endif
+	#if PL_CONFIG_HAS_SHELL_QUEUE && PL_CONFIG_SQUEUE_SINGLE_CHAR
+	    {
+	               i = 0;
+	               do{
+	                                               p[i] = SQUEUE_ReceiveChar();
+	                                               i++;
+	               }while(p[i-1]!='\0');
+	               CLS1_SendStr(p, CLS1_GetStdio()->stdOut);
+	    }
+	#elif PL_CONFIG_HAS_SHELL_QUEUE /* !PL_CONFIG_SQUEUE_SINGLE_CHAR */
+	    {
+	    msg = SQUEUE_ReceiveMessage();
+	                  if(msg!=NULL){
+	                                 CLS1_SendStr(msg, CLS1_GetStdio()->stdOut);
+	                                 vPortFree((void*)msg);
+	                  }
+	   }
+
 #endif /* PL_CONFIG_HAS_SHELL_QUEUE */
     vTaskDelay(pdMS_TO_TICKS(10));
   } /* for */
