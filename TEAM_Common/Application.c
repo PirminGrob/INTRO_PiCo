@@ -215,7 +215,8 @@ static void APP_AdoptToHardware(void) {
     //MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
   } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* L7 */
 #if PL_CONFIG_HAS_QUADRATURE
-    (void)Q4CRight_SwapPins(TRUE);
+	    (void)Q4CRight_SwapPins(TRUE);
+	    (void)Q4CLeft_SwapPins(TRUE);
 #endif
 	MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
 	//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
@@ -288,22 +289,28 @@ void PiCo_Event_Task(void * pvParameters){
 }
 
 #if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
-#define SENS_THRESHOLD 300
+#define SENS_THRESHOLD 100
 static void PiCo_Brumm_Brumm(void * pvParameters){
 	(void)pvParameters;
+	/*MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
+	MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
+//	MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0x0000);
+//	MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0x0000);
+	MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 50);
+	MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 50);
+	for(;;){
+	}*/
 	uint16_t sens_val[REF_NOF_SENSORS];
 	uint8_t cnt;
-	//uint16_t del_times[10] = {20, 10, 50, 30, 35, 5, 90, 4, 40, 42};
-	//uint8_t del_i = 0;
+	uint16_t del_times[10] = {200, 100, 200, 100, 200, 100, 200, 100, 200, 100};
+	uint8_t del_i = 0;
 //	while(xSemaphoreTake(SEM_REF_CALIBRATED,0)!=pdTRUE);
 	//bötten
 	while(!REF_IsReady()){
 		vTaskDelay(10/portTICK_PERIOD_MS);
 	}
-	MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
-	MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
-	MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0x8000);
-	MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0x8000);
+	MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 100);
+	MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 100);
 	for(;;){
 		REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
 		cnt = 0;
@@ -311,28 +318,22 @@ static void PiCo_Brumm_Brumm(void * pvParameters){
 			if(sens_val[i] > SENS_THRESHOLD) cnt++;
 		}
 		if(cnt == REF_NOF_SENSORS){
-			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
-			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
-			MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0x8000);
-			MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0x8000);
+			MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 90);
+			MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 90);
 		} else if(sens_val[REF_NOF_SENSORS - 1] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < SENS_THRESHOLD){
-			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_BACKWARD);
-			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
-			MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0x8000);
-			MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0xFFFF);
-			//del_i = (del_i + 1) % 10;
-			//vTaskDelay(del_times[del_i] / portTICK_PERIOD_MS);
+			MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -100);
+			MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0);
+			del_i = (del_i + 1) % 10;
+			vTaskDelay(del_times[del_i] / portTICK_PERIOD_MS);
 			//vTaskDelay(del_i * 100 / portTICK_PERIOD_MS);
-			vTaskDelay(10 / portTICK_PERIOD_MS);
+			//vTaskDelay(10 / portTICK_PERIOD_MS);
 		} else if(sens_val[0] < SENS_THRESHOLD || sens_val[1] < SENS_THRESHOLD || sens_val[2] < SENS_THRESHOLD){
-			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
-			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_BACKWARD);
-			MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0xFFFF);
-			MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0x8000);
-			//del_i = (del_i + 1) % 10;
-			//vTaskDelay(del_times[del_i] / portTICK_PERIOD_MS);
+			MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0);
+			MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -100);
+			del_i = (del_i + 1) % 10;
+			vTaskDelay(del_times[del_i] / portTICK_PERIOD_MS);
 			//vTaskDelay(del_i * 100 / portTICK_PERIOD_MS);
-			vTaskDelay(10 / portTICK_PERIOD_MS);
+			//vTaskDelay(10 / portTICK_PERIOD_MS);
 		}
 		vTaskDelay(5/portTICK_PERIOD_MS);
 	}
