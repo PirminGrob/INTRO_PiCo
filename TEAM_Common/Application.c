@@ -58,6 +58,8 @@
 
 #if PL_CONFIG_HAS_EVENTS
 
+//xSemaphoreHandle SEM_REF_CALIBRATED = NULL;
+
 static void BtnMsg(int btn, const char *msg) {
 #if PL_CONFIG_HAS_SHELL
   #if PL_CONFIG_HAS_SHELL_QUEUE
@@ -191,14 +193,8 @@ void APP_EventHandler(EVNT_Handle event) {
 
 #if PL_CONFIG_HAS_MOTOR /* currently only used for robots */
 static const KIN1_UID RoboIDs[] = {
-  /* 0: L20, V2 */ {{0x00,0x03,0x00,0x00,0x67,0xCD,0xB7,0x21,0x4E,0x45,0x32,0x15,0x30,0x02,0x00,0x13}},
-  /* 1: L21, V2 */ {{0x00,0x05,0x00,0x00,0x4E,0x45,0xB7,0x21,0x4E,0x45,0x32,0x15,0x30,0x02,0x00,0x13}},
-  /* 2: L4, V1  */ {{0x00,0x0B,0xFF,0xFF,0x4E,0x45,0xFF,0xFF,0x4E,0x45,0x27,0x99,0x10,0x02,0x00,0x24}},
-  /* 3: L23, V2 */ {{0x00,0x0A,0x00,0x00,0x67,0xCD,0xB8,0x21,0x4E,0x45,0x32,0x15,0x30,0x02,0x00,0x13}},
-  /* 4: L11, V2 */ {{0x00,0x19,0x00,0x00,0x67,0xCD,0xB9,0x11,0x4E,0x45,0x32,0x15,0x30,0x02,0x00,0x13}},
-  /* 5: L5, V2 */  {{0x00,0x38,0x00,0x00,0x67,0xCD,0xB5,0x41,0x4E,0x45,0x32,0x15,0x30,0x02,0x00,0x13}},
-  /* 6: L3, V1 */  {{0x00,0x33,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x4E,0x45,0x27,0x99,0x10,0x02,0x00,0x0A}},
-  /* 7: L1, V1 */  {{0x00,0x19,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x4E,0x45,0x27,0x99,0x10,0x02,0x00,0x25}},
+  /* 0: L8, V1 */ {{0x00,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x4E,0x4E,0x27,0x99,0x10,0x02,0x00,0x25}},
+  /* 1: L7, V1 */ {{0x00,0x20,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x4E,0x45,0x27,0x99,0x10,0x02,0x00,0x07}},
 };
 #endif
 
@@ -211,45 +207,18 @@ static void APP_AdoptToHardware(void) {
     for(;;); /* error */
   }
 #if PL_CONFIG_HAS_MOTOR
-  if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* L20 */
+  if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* L8 */
 #if PL_CONFIG_HAS_QUADRATURE
     (void)Q4CRight_SwapPins(TRUE);
 #endif
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
-  } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* V2 L21 */
-    /* no change needed */
-  } else if (KIN1_UIDSame(&id, &RoboIDs[2])) { /* V1 L4 */
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* revert left motor */
-#if PL_CONFIG_HAS_QUADRATURE
-    (void)Q4CLeft_SwapPins(TRUE);
-    (void)Q4CRight_SwapPins(TRUE);
-#endif
-  } else if (KIN1_UIDSame(&id, &RoboIDs[3])) { /* L23 */
+    //MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
+    //MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
+  } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* L7 */
 #if PL_CONFIG_HAS_QUADRATURE
     (void)Q4CRight_SwapPins(TRUE);
 #endif
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
-  } else if (KIN1_UIDSame(&id, &RoboIDs[4])) { /* L11 */
-#if PL_CONFIG_HAS_QUADRATURE
-    (void)Q4CRight_SwapPins(TRUE);
-#endif
-  } else if (KIN1_UIDSame(&id, &RoboIDs[5])) { /* L5, V2 */
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert right motor */
-    (void)Q4CRight_SwapPins(TRUE);
-  } else if (KIN1_UIDSame(&id, &RoboIDs[6])) { /* L3, V1 */
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert right motor */
-#if PL_CONFIG_HAS_QUADRATURE
-    (void)Q4CLeft_SwapPins(TRUE);
-    (void)Q4CRight_SwapPins(TRUE);
-#endif
-  } else if (KIN1_UIDSame(&id, &RoboIDs[7])) { /* L1, V1 */
-    MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert right motor */
-#if PL_CONFIG_HAS_QUADRATURE
-    (void)Q4CLeft_SwapPins(TRUE);
-    (void)Q4CRight_SwapPins(TRUE);
-#endif
+	MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
+	//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
   }
 #endif
 #if PL_CONFIG_HAS_QUADRATURE && PL_CONFIG_BOARD_IS_ROBO_V2
@@ -318,9 +287,57 @@ void PiCo_Event_Task(void * pvParameters){
      }
 }
 
+#if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
+static void PiCo_Brumm_Brumm(void * pvParameters){
+	(void)pvParameters;
+	uint16_t sens_val[REF_NOF_SENSORS];
+	uint8_t cnt;
+	uint16_t del_times[10] = {20, 10, 50, 30, 35, 5, 90, 4, 40, 42};
+	uint8_t del_i = 0;
+//	while(xSemaphoreTake(SEM_REF_CALIBRATED,0)!=pdTRUE);
+	//bötten
+	while(!REF_IsReady()){
+		vTaskDelay(10/portTICK_PERIOD_MS);
+	}
+	MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
+	MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
+	MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0x8000);
+	MOT_SetVal(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0x8000);
+	for(;;){
+		REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
+		cnt = 0;
+		for(uint8_t i = 0; i < REF_NOF_SENSORS; i++){
+			if(sens_val[i] > 500) cnt++;
+		}
+		if(cnt == REF_NOF_SENSORS){
+			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
+			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
+		} else {
+			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_BACKWARD);
+			MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), MOT_DIR_FORWARD);
+			del_i = (del_i + 1) % 10;
+			vTaskDelay(del_times[del_i] / portTICK_PERIOD_MS);
+			//vTaskDelay(del_i * 100 / portTICK_PERIOD_MS);
+		}
+		vTaskDelay(5/portTICK_PERIOD_MS);
+	}
+}
+#endif
+
 void APP_Start(void) {
   PL_Init();
   APP_AdoptToHardware();
+#if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
+	BaseType_t res = xTaskCreate(PiCo_Brumm_Brumm, "BrummBrumm", configMINIMAL_STACK_SIZE + 300,
+			(void *) NULL, tskIDLE_PRIORITY, NULL);
+	if (res != pdPASS) {
+	}
+#endif
+/*  vSemaphoreCreateBinary(SEM_REF_CALIBRATED);
+  if(SEM_REF_CALIBRATED == NULL){
+	  for(;;); // error
+  }
+  (void)xSemaphoreTake(SEM_REF_CALIBRATED, 0);*/
   //TRG_SetTrigger(TRG_LED_BLINK, 5000/TRG_TICKS_MS, LED_HeartBeat, NULL);
   __asm volatile("cpsie i"); /* enable interrupts */
   //EVNT_SetEvent(EVNT_STARTUP);

@@ -14,6 +14,8 @@
 #if PL_CONFIG_HAS_EVENTS
 #include "Event.h"
 
+//extern xSemaphoreHandle SEM_REF_CALIBRATED = NULL;
+
 void APP_EventHandler(EVNT_Handle event);
 #endif
 

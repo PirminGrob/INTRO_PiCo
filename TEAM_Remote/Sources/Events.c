@@ -29,6 +29,7 @@
 
 #include "Cpu.h"
 #include "Events.h"
+#include "Timer.h"
 
 #ifdef __cplusplus
 extern "C" {
