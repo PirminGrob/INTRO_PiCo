@@ -9,6 +9,8 @@
 
 #include "Platform.h"
 
+#define TACHO_SAMPLE_PERIOD_MS (5)
+  /*!< \todo speed sample period in ms. Make sure that speed is sampled at the given rate. */
 #if PL_CONFIG_HAS_MOTOR_TACHO
 /*!
  * \brief Returns the previously calculated speed of the motor.

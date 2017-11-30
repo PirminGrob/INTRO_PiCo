@@ -37,6 +37,8 @@ extern "C" {
 
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
+#include "Tacho.h"
+#include "Platform.h"
 
 /*
 ** ===================================================================
@@ -141,6 +143,14 @@ void FRTOS1_vApplicationTickHook(void)
 {
   /* Called for every RTOS tick. */
   /* Write your code here ... */
+#if PL_CONFIG_HAS_MOTOR_TACHO
+	//static uint32_t counter = 0;
+	//counter += portTICK_PERIOD_MS;
+	//if(counter >= TACHO_SAMPLE_PERIOD_MS){
+		TACHO_Sample();
+	//	counter = 0;
+	//}
+#endif
 }
 
 /*
