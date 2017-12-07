@@ -269,7 +269,7 @@ uint16_t REF_GetLineValue(void) {
 static REF_LineKind ReadLineKind(SensorTimeType val[REF_NOF_SENSORS]) {
   uint32_t sum, sumLeft, sumRight, outerLeft, outerRight;
   int i;
-  #define REF_MIN_LINE_VAL      0x300   /* minimum value indicating a line */
+  #define REF_MIN_LINE_VAL      0x100   /* minimum value indicating a line */
 
   for(i=0;i<REF_NOF_SENSORS;i++) {
     if (val[i]<REF_MIN_LINE_VAL) { /* smaller value? White seen! */
@@ -307,7 +307,7 @@ static REF_LineKind ReadLineKind(SensorTimeType val[REF_NOF_SENSORS]) {
   outerRight = val[0];
 #endif
 
-  #define MIN_LEFT_RIGHT_SUM   ((REF_NOF_SENSORS*1000)/4) /* 1/4 of full sensor values */
+  #define MIN_LEFT_RIGHT_SUM   ((REF_NOF_SENSORS*REF_MIN_LINE_VAL)/4) /* 1/4 of full sensor values */
 
   if (outerLeft>=REF_MIN_LINE_VAL && outerRight<REF_MIN_LINE_VAL && sumLeft>MIN_LEFT_RIGHT_SUM && sumRight<MIN_LEFT_RIGHT_SUM) {
 #if 1 || PL_APP_LINE_MAZE

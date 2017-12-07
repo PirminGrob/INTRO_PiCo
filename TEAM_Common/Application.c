@@ -60,7 +60,7 @@
 #if PL_CONFIG_HAS_EVENTS
 
 //xSemaphoreHandle SEM_REF_CALIBRATED = NULL;
-
+int longPressedFLAG =0;
 static void BtnMsg(int btn, const char *msg) {
 #if PL_CONFIG_HAS_SHELL
   #if PL_CONFIG_HAS_SHELL_QUEUE
@@ -108,6 +108,7 @@ void APP_EventHandler(EVNT_Handle event) {
      break;
   case EVNT_SW1_LPRESSED:
       BtnMsg(1, "long pressed ");
+      longPressedFLAG = 1;
 #if PL_CONFIG_HAS_REFLECTANCE
       REF_CalibrateStartStop();
 #endif
@@ -118,6 +119,12 @@ void APP_EventHandler(EVNT_Handle event) {
        break;
   case EVNT_SW1_RELEASED:
       BtnMsg(1, "released");
+      if(longPressedFLAG) {
+    	  longPressedFLAG = 0;
+      }
+      else{
+    	  LF_StartFollowing();
+      }
        break;
 #endif
 #if PL_CONFIG_NOF_KEYS>=2
