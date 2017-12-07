@@ -269,7 +269,7 @@ uint16_t REF_GetLineValue(void) {
 static REF_LineKind ReadLineKind(SensorTimeType val[REF_NOF_SENSORS]) {
   uint32_t sum, sumLeft, sumRight, outerLeft, outerRight;
   int i;
-  #define REF_MIN_LINE_VAL      0x60   /* minimum value indicating a line */
+  #define REF_MIN_LINE_VAL      0x300   /* minimum value indicating a line */
 
   for(i=0;i<REF_NOF_SENSORS;i++) {
     if (val[i]<REF_MIN_LINE_VAL) { /* smaller value? White seen! */
@@ -579,7 +579,7 @@ static void ReflTask (void *pvParameters) {
   (void)pvParameters; /* not used */
   for(;;) {
     REF_StateMachine();
-    FRTOS1_vTaskDelay(5/portTICK_PERIOD_MS);
+    FRTOS1_vTaskDelay(10/portTICK_PERIOD_MS);
   }
 }
 

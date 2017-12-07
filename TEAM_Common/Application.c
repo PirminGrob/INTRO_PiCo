@@ -16,6 +16,7 @@
 #include "CLS1.h"
 #include "KIN1.h"
 #include "Trigger.h"
+#include "PORT_PDD.h"
 #if PL_CONFIG_HAS_KEYS
   #include "Keys.h"
 #endif
@@ -193,7 +194,7 @@ void APP_EventHandler(EVNT_Handle event) {
 
 #if PL_CONFIG_HAS_MOTOR /* currently only used for robots */
 static const KIN1_UID RoboIDs[] = {
-  /* 0: L8, V1 */ {{0x00,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x4E,0x4E,0x27,0x99,0x10,0x02,0x00,0x25}},
+  /* 0: 23, V2 */ {{0x00,0x29,0x00,0x00,0x67,0xCD,0xB4,0x51,0x4E,0x45,0x32,0x15,0x30,0x02,0x00,0x13}},
   /* 1: L7, V1 */ {{0x00,0x20,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x4E,0x45,0x27,0x99,0x10,0x02,0x00,0x07}},
 };
 #endif
@@ -207,20 +208,29 @@ static void APP_AdoptToHardware(void) {
     for(;;); /* error */
   }
 #if PL_CONFIG_HAS_MOTOR
-  if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* L8 */
-#if PL_CONFIG_HAS_QUADRATURE
-    (void)Q4CRight_SwapPins(TRUE);
-#endif
-    //MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
-    //MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
-  } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* L7 */
-#if PL_CONFIG_HAS_QUADRATURE
-	    (void)Q4CRight_SwapPins(TRUE);
-	    (void)Q4CLeft_SwapPins(TRUE);
-#endif
-	MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
-	//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
-  }
+if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* 23 */
+	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 10, PORT_PDD_PULL_UP);
+	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 10, PORT_PDD_PULL_ENABLE);
+	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 11, PORT_PDD_PULL_UP);
+	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 11, PORT_PDD_PULL_ENABLE);
+	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 16, PORT_PDD_PULL_UP);
+	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 16, PORT_PDD_PULL_ENABLE);
+	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 17, PORT_PDD_PULL_UP);
+	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 17, PORT_PDD_PULL_ENABLE);
+	  MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE);
+	#if PL_CONFIG_HAS_QUADRATURE
+		(void)Q4CRight_SwapPins(TRUE);
+	#endif
+		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
+		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
+	  } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* L7 */
+	#if PL_CONFIG_HAS_QUADRATURE
+			(void)Q4CRight_SwapPins(TRUE);
+			(void)Q4CLeft_SwapPins(TRUE);
+	#endif
+		MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
+		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
+		}
 #endif
 #if PL_CONFIG_HAS_QUADRATURE && PL_CONFIG_BOARD_IS_ROBO_V2
   /* pull-ups for Quadrature Encoder Pins */
@@ -343,12 +353,12 @@ static void PiCo_Brumm_Brumm(void * pvParameters){
 void APP_Start(void) {
   PL_Init();
   APP_AdoptToHardware();
-#if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
-	BaseType_t res = xTaskCreate(PiCo_Brumm_Brumm, "BrummBrumm", configMINIMAL_STACK_SIZE + 300,
-			(void *) NULL, tskIDLE_PRIORITY, NULL);
-	if (res != pdPASS) {
-	}
-#endif
+//#if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
+//	BaseType_t res = xTaskCreate(PiCo_Brumm_Brumm, "BrummBrumm", configMINIMAL_STACK_SIZE + 300,
+//			(void *) NULL, tskIDLE_PRIORITY, NULL);
+//	if (res != pdPASS) {
+//	}
+//#endif
 /*  vSemaphoreCreateBinary(SEM_REF_CALIBRATED);
   if(SEM_REF_CALIBRATED == NULL){
 	  for(;;); // error

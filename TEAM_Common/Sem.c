@@ -46,6 +46,7 @@ void SEM_Deinit(void) {
 
 /*! \brief Initializes module */
 void SEM_Init(void) {
+#if 0
 	BaseType_t res;
 	sem = xSemaphoreCreateBinary () ;
 	 if (sem == NULL) {
@@ -65,6 +66,6 @@ void SEM_Init(void) {
 			if (res != pdPASS) {
 			}
 	 }
-
+#endif
 }
 #endif /* PL_CONFIG_HAS_SEMAPHORE */
