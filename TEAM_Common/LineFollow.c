@@ -29,12 +29,15 @@
 #if PL_CONFIG_HAS_DRIVE
   #include "Drive.h"
 #endif
+#include "Keys.h"
 
 #if 1 /*! \todo */
 #include "RNet_App.h"
 #endif
 
-typedef enum {
+	static uint8_t follow = 0;
+
+	typedef enum {
   STATE_IDLE,              /* idle, not doing anything */
   STATE_FOLLOW_SEGMENT,    /* line following segment, going forward */
   STATE_TURN,              /* reached an intersection, turning around */
@@ -87,7 +90,124 @@ static bool FollowSegment(void) {
 }
 
 static void StateMachine(void) {
-  REF_LineKind lineKind;
+#if 1
+#define SENS_THRESHOLD 100
+	uint16_t sens_val[REF_NOF_SENSORS];
+	uint8_t cnt;
+	static uint8_t dir = 0;
+	uint8_t del;
+
+	REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
+	cnt = 0;
+	for(uint8_t i = 0; i < REF_NOF_SENSORS; i++){
+		if(sens_val[i] > SENS_THRESHOLD) cnt++;
+	}
+
+	if(follow){
+		if(cnt == REF_NOF_SENSORS){
+			// line full
+			DRV_SetMode(DRV_MODE_NONE);
+			DRV_SetSpeed(1000,-3000);
+			DRV_SetMode(DRV_MODE_SPEED);
+			vTaskDelay(500/portTICK_PERIOD_MS);
+			while(REF_GetLineKind()!=REF_LINE_STRAIGHT);
+			DRV_SetMode(DRV_MODE_NONE);
+		} else if(cnt == 0){
+			// line none
+			DRV_SetMode(DRV_MODE_STOP);
+			follow=0;
+			/*if(dir == 0){
+				DRV_SetMode(DRV_MODE_STOP);
+				follow = 0;
+			} else if(dir == 1){
+				dir=0;
+				DRV_SetMode(DRV_MODE_NONE);
+				DRV_SetSpeed(1000,-3000);
+				DRV_SetMode(DRV_MODE_SPEED);
+				//vTaskDelay(500/portTICK_PERIOD_MS);
+				del = 0;
+				while(REF_GetLineKind()!=REF_LINE_STRAIGHT){
+					if(del > 200) break;
+					del += 1;
+					vTaskDelay(1/portTICK_PERIOD_MS);
+				}
+				DRV_SetMode(DRV_MODE_NONE); if(del < 200) return;
+				DRV_SetSpeed(-1000,3000);
+				DRV_SetMode(DRV_MODE_SPEED);
+				//vTaskDelay(500/portTICK_PERIOD_MS);
+				del = 0;
+				while(REF_GetLineKind()!=REF_LINE_STRAIGHT){
+					if(del > 400) break;
+					del += 1;
+					vTaskDelay(1/portTICK_PERIOD_MS);
+				}
+				DRV_SetMode(DRV_MODE_NONE); if(del < 400) return;
+				DRV_SetSpeed(1000,-3000);
+				DRV_SetMode(DRV_MODE_SPEED);
+				//vTaskDelay(500/portTICK_PERIOD_MS);
+				del = 0;
+				while(REF_GetLineKind()!=REF_LINE_STRAIGHT){
+					if(del > 400) break;
+					del += 1;
+					vTaskDelay(1/portTICK_PERIOD_MS);
+				}
+				DRV_SetMode(DRV_MODE_NONE); if(del < 400) return;
+			} else if(dir == 2){
+				dir=0;
+				DRV_SetMode(DRV_MODE_NONE);
+				DRV_SetSpeed(-1000,3000);
+				DRV_SetMode(DRV_MODE_SPEED);
+				//vTaskDelay(500/portTICK_PERIOD_MS);
+				del = 0;
+				while(REF_GetLineKind()!=REF_LINE_STRAIGHT){
+					if(del > 200) break;
+					del += 1;
+					vTaskDelay(1/portTICK_PERIOD_MS);
+				}
+				DRV_SetMode(DRV_MODE_NONE); if(del < 200) return;
+				DRV_SetSpeed(1000,-3000);
+				DRV_SetMode(DRV_MODE_SPEED);
+				//vTaskDelay(500/portTICK_PERIOD_MS);
+				del = 0;
+				while(REF_GetLineKind()!=REF_LINE_STRAIGHT){
+					if(del > 400) break;
+					del += 1;
+					vTaskDelay(1/portTICK_PERIOD_MS);
+				}
+				DRV_SetMode(DRV_MODE_NONE); if(del < 400) return;
+				DRV_SetSpeed(-1000,3000);
+				DRV_SetMode(DRV_MODE_SPEED);
+				//vTaskDelay(500/portTICK_PERIOD_MS);
+				del = 0;
+				while(REF_GetLineKind()!=REF_LINE_STRAIGHT){
+					if(del > 400) break;
+					del += 1;
+					vTaskDelay(1/portTICK_PERIOD_MS);
+				}
+				DRV_SetMode(DRV_MODE_NONE); if(del < 400) return;
+			}*/
+		} else if(sens_val[REF_NOF_SENSORS - 1] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < SENS_THRESHOLD){
+			//line right
+			PID_Line(REF_GetLineValue(),REF_MIDDLE_LINE_VALUE);
+			dir = 1;
+		} else if(sens_val[0] < SENS_THRESHOLD || sens_val[1] < SENS_THRESHOLD || sens_val[2] < SENS_THRESHOLD){
+			//line left
+			PID_Line(REF_GetLineValue(),REF_MIDDLE_LINE_VALUE);
+			dir = 2;
+		} else {
+			//error
+		}
+	} else {
+	}
+
+	//PID_Line(REF_GetLineValue());
+
+	return;
+#endif
+
+	REF_LineKind lineKind;
+
+
 
   switch (LF_currState) {
     case STATE_IDLE:
@@ -104,14 +224,20 @@ static void StateMachine(void) {
     case STATE_TURN:
       lineKind = REF_GetLineKind();
       if (lineKind==REF_LINE_FULL) {
-        LF_currState = STATE_FINISHED;
+          DRV_SetSpeed(1000,-3000);
+          DRV_SetMode(DRV_MODE_SPEED);
+          vTaskDelay(500/portTICK_PERIOD_MS);
+          while(REF_GetLineKind()!=REF_LINE_STRAIGHT);
+      	  DRV_SetMode(DRV_MODE_NONE);
+      	  LF_currState = STATE_FOLLOW_SEGMENT;
+        //LF_currState = STATE_FINISHED;
       } if (lineKind==REF_LINE_NONE) {
     	  DRV_SetSpeed(1000,-3000);
     	        DRV_SetMode(DRV_MODE_SPEED);
     	        vTaskDelay(500/portTICK_PERIOD_MS);
     	        while(REF_GetLineKind()!=REF_LINE_STRAIGHT);
     	    	  DRV_SetMode(DRV_MODE_NONE);
-    	    	  LF_currState = STATE_STOP;
+    	    	  LF_currState = STATE_FINISHED;
       } else {
   	  //TURN_Turn(TURN_RIGHT180, NULL);
       /*DRV_SetMode(DRV_MODE_STOP);
@@ -122,12 +248,6 @@ static void StateMachine(void) {
       //for(uint8_t i = 0; i < 4; i++) TURN_Turn(TURN_LEFT45, NULL);
       /*TURN_TurnAngle(135,NULL);
       TURN_MoveToPos(Q4CLeft_GetPos()+2000,Q4CRight_GetPos()+2000,TRUE,NULL,200);*/
-      DRV_SetSpeed(1000,-3000);
-      DRV_SetMode(DRV_MODE_SPEED);
-      vTaskDelay(500/portTICK_PERIOD_MS);
-      while(REF_GetLineKind()!=REF_LINE_STRAIGHT);
-  	  DRV_SetMode(DRV_MODE_NONE);
-  	  LF_currState = STATE_FOLLOW_SEGMENT;
       }
       break;
 
@@ -164,6 +284,7 @@ static void LineTask (void *pvParameters) {
       DRV_SetMode(DRV_MODE_NONE); /* disable any drive mode */
       PID_Start();
       LF_currState = STATE_FOLLOW_SEGMENT;
+      follow = 1;
     }
     if (notifcationValue&LF_STOP_FOLLOWING) {
       LF_currState = STATE_STOP;
