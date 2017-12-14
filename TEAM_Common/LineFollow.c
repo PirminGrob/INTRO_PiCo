@@ -16,6 +16,8 @@
 #include "Reflectance.h"
 #if PL_CONFIG_HAS_TURN
   #include "Turn.h"
+#include "Q4CLeft.h"
+#include "Q4CRight.h"
 #endif
 #include "WAIT1.h"
 #include "Pid.h"
@@ -102,21 +104,30 @@ static void StateMachine(void) {
     case STATE_TURN:
       lineKind = REF_GetLineKind();
       if (lineKind==REF_LINE_FULL) {
-        //LF_currState = STATE_FINISHED;
-        //TURN_Turn(TURN_LEFT180, NULL);
-        TURN_TurnAngle(180,NULL);
-        TURN_Turn(TURN_STEP_LINE_FW_POST_LINE, NULL);
-        DRV_SetMode(DRV_MODE_STOP); /* disable position mode */
-        LF_currState = STATE_FOLLOW_SEGMENT;
+        LF_currState = STATE_FINISHED;
       } if (lineKind==REF_LINE_NONE) {
-    	  //TURN_Turn(TURN_LEFT180, NULL);
-    	  TURN_TurnAngle(180,NULL);
-    	  TURN_Turn(TURN_STEP_LINE_FW_POST_LINE, NULL);
-
-        DRV_SetMode(DRV_MODE_STOP); /* disable position mode */
-        LF_currState = STATE_FOLLOW_SEGMENT;
+    	  DRV_SetSpeed(1000,-3000);
+    	        DRV_SetMode(DRV_MODE_SPEED);
+    	        vTaskDelay(500/portTICK_PERIOD_MS);
+    	        while(REF_GetLineKind()!=REF_LINE_STRAIGHT);
+    	    	  DRV_SetMode(DRV_MODE_NONE);
+    	    	  LF_currState = STATE_STOP;
       } else {
-        LF_currState = STATE_STOP;
+  	  //TURN_Turn(TURN_RIGHT180, NULL);
+      /*DRV_SetMode(DRV_MODE_STOP);
+      vTaskDelay(5/portTICK_PERIOD_MS);
+      DRV_SetPos(Q4CLeft_GetPos()-800, Q4CRight_GetPos()+800);
+      DRV_SetMode(DRV_MODE_POS);
+      vTaskDelay(500/portTICK_PERIOD_MS);*/
+      //for(uint8_t i = 0; i < 4; i++) TURN_Turn(TURN_LEFT45, NULL);
+      /*TURN_TurnAngle(135,NULL);
+      TURN_MoveToPos(Q4CLeft_GetPos()+2000,Q4CRight_GetPos()+2000,TRUE,NULL,200);*/
+      DRV_SetSpeed(1000,-3000);
+      DRV_SetMode(DRV_MODE_SPEED);
+      vTaskDelay(500/portTICK_PERIOD_MS);
+      while(REF_GetLineKind()!=REF_LINE_STRAIGHT);
+  	  DRV_SetMode(DRV_MODE_NONE);
+  	  LF_currState = STATE_FOLLOW_SEGMENT;
       }
       break;
 
