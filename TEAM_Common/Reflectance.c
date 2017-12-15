@@ -552,9 +552,9 @@ static void REF_StateMachine(void) {
       //SHELL_SendString((unsigned char*)"...stopping calibration.\r\n");
 #if PL_CONFIG_HAS_CONFIG_NVM
       if (NVMC_SaveReflectanceData(&SensorCalibMinMax, sizeof(SensorCalibMinMax))!=ERR_OK) {
-        SHELL_SendString((unsigned char*)"Flashing calibration data FAILED!\r\n");
+        //SHELL_SendString((unsigned char*)"Flashing calibration data FAILED!\r\n");
       } else {
-        SHELL_SendString((unsigned char*)"Stored calibration data.\r\n");
+        //SHELL_SendString((unsigned char*)"Stored calibration data.\r\n");
       }
 #endif
       refState = REF_STATE_READY;

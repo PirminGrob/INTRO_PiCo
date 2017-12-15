@@ -370,10 +370,9 @@ static void PiCo_Brumm_Brumm(void * pvParameters){
 	}
 }
 #endif
-#define SOICHEIB_SPEED_LEFT 75
-#define SOICHEIB_SPEED_RIGHT 75
-#define SOICHEIB_TURN_TIME_90 300
-#define SOICHEIB_SENS_THRESHOLD 50
+#define SOICHEIB_SPEED_LEFT 60
+#define SOICHEIB_SPEED_RIGHT 60
+#define SOICHEIB_SENS_THRESHOLD 900
 static void Soicheib(void * pvParameters){
 	(void)pvParameters;
 	uint8_t sumo = 0;
@@ -385,47 +384,55 @@ static void Soicheib(void * pvParameters){
 				//start battle
 				for(uint8_t i = 0; i < 10; i++){
 					vTaskDelay(500/portTICK_PERIOD_MS);
-					//BUZ_PlayTune(BUZ_TUNE_BUTTON);
+					BUZ_PlayTune(BUZ_TUNE_BUTTON);
 				}
-				//vTaskDelay(5000/portTICK_PERIOD_MS);
-				//todo: tof
-				//DRV_SetSpeed(SPEED_LEFT, SPEED_RIGHT);
-				//DRV_SetMode(DRV_MODE_SPEED);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
 			} else {
 				//stop battle
-				//DRV_SetMode(DRV_MODE_STOP);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0);
 			}
 		}
 		if(sumo){
-			/*//battle
+			//battle
 			int16_t tof_val[4];
 			tof_val[0] = DIST_GetDistance(DIST_SENSOR_FRONT);
 			tof_val[1] = DIST_GetDistance(DIST_SENSOR_LEFT);
 			tof_val[2] = DIST_GetDistance(DIST_SENSOR_RIGHT);
 			tof_val[3] = DIST_GetDistance(DIST_SENSOR_REAR);
-			if(tof_val[1] != -1){
-				// turn left
-				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
-				//DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
-				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
-				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
-			} else if(tof_val[2] != -1){
-				// turn right
-				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
-				//DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
-				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
-				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
-			} else if(tof_val[3] != -1){
-				// turn 180
-				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
-				//DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
-				vTaskDelay(2*TURN_TIME_90/portTICK_PERIOD_MS);
-				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
-			}*/
+			if(tof_val[0] > 20 && tof_val[0] < 300){
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 100);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 100);
+			} else {
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+				if(tof_val[1] > 20 && tof_val[1] < 300){
+					// turn left
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -SOICHEIB_SPEED_LEFT);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+					vTaskDelay(100/portTICK_PERIOD_MS);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+					vTaskDelay(50/portTICK_PERIOD_MS);
+				} else if(tof_val[2] > 20 && tof_val[2] < 300){
+					// turn right
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -SOICHEIB_SPEED_RIGHT);
+					vTaskDelay(100/portTICK_PERIOD_MS);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+					vTaskDelay(50/portTICK_PERIOD_MS);
+				} /*else if(tof_val[3] > 20 && tof_val[3] < 300){
+					// turn 180
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -SOICHEIB_SPEED_LEFT);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+					vTaskDelay(150/portTICK_PERIOD_MS);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+					MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+					vTaskDelay(50/portTICK_PERIOD_MS);
+				}*/
+			}
 			uint16_t sens_val[REF_NOF_SENSORS];
 			uint8_t cnt;
 			REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
@@ -437,22 +444,16 @@ static void Soicheib(void * pvParameters){
 				// drive forward
 			} else if(sens_val[REF_NOF_SENSORS - 1] < SOICHEIB_SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < SOICHEIB_SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < SOICHEIB_SENS_THRESHOLD){
 				// turn left
-				BUZ_PlayTune(BUZ_TUNE_BUTTON);
-				//DRV_SetSpeed(-SPEED_LEFT*2,-SPEED_RIGHT/2);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -100);
-				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -50);
-				vTaskDelay(250/portTICK_PERIOD_MS);
-				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -30);
+				vTaskDelay(200/portTICK_PERIOD_MS);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
 			} else if(sens_val[0] < SOICHEIB_SENS_THRESHOLD || sens_val[1] < SOICHEIB_SENS_THRESHOLD || sens_val[2] < SOICHEIB_SENS_THRESHOLD){
 				// turn right
-				BUZ_PlayTune(BUZ_TUNE_BUTTON);
-				//DRV_SetSpeed(SPEED_LEFT/2,-SPEED_RIGHT*2);
-				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -50);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -30);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -100);
-				vTaskDelay(250/portTICK_PERIOD_MS);
-				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				vTaskDelay(200/portTICK_PERIOD_MS);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
 				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
 			}
