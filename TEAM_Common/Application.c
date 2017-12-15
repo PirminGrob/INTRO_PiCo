@@ -56,6 +56,11 @@
   #include "Reflectance.h"
 #endif
 #include "Sumo.h"
+#include "Drive.h"
+#include "Distance.h"
+
+static xSemaphoreHandle sem = NULL;
+static int32_t speed_l = 0, speed_r = 0;
 
 #if PL_CONFIG_HAS_EVENTS
 
@@ -123,7 +128,8 @@ void APP_EventHandler(EVNT_Handle event) {
     	  longPressedFLAG = 0;
       }
       else{
-    	  LF_StartFollowing();
+    	  //LF_StartFollowing();
+    	  xSemaphoreGive(sem);
       }
        break;
 #endif
@@ -220,6 +226,8 @@ if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* 23 */
 	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 10, PORT_PDD_PULL_ENABLE);
 	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 11, PORT_PDD_PULL_UP);
 	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 11, PORT_PDD_PULL_ENABLE);
+	  PORT_PDD_SetPinPullSelect(PORTA_BASE_PTR, 14, PORT_PDD_PULL_UP);
+	  PORT_PDD_SetPinPullEnable(PORTA_BASE_PTR, 14, PORT_PDD_PULL_ENABLE);
 	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 16, PORT_PDD_PULL_UP);
 	  PORT_PDD_SetPinPullEnable(PORTC_BASE_PTR, 16, PORT_PDD_PULL_ENABLE);
 	  PORT_PDD_SetPinPullSelect(PORTC_BASE_PTR, 17, PORT_PDD_PULL_UP);
@@ -230,6 +238,8 @@ if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* 23 */
 	#endif
 		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
 		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
+		speed_l = 3000;
+		speed_r = 3000;
 	  } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* L7 */
 	#if PL_CONFIG_HAS_QUADRATURE
 			(void)Q4CRight_SwapPins(TRUE);
@@ -237,6 +247,8 @@ if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* 23 */
 	#endif
 		MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
 		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
+		speed_l = 1000;
+		speed_r = 3000;
 		}
 #endif
 #if PL_CONFIG_HAS_QUADRATURE && PL_CONFIG_BOARD_IS_ROBO_V2
@@ -306,7 +318,7 @@ void PiCo_Event_Task(void * pvParameters){
 }
 
 #if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
-#define SENS_THRESHOLD 100
+#define SENS_THRESHOLD 50
 static void PiCo_Brumm_Brumm(void * pvParameters){
 	(void)pvParameters;
 	/*MOT_SetDirection(MOT_GetMotorHandle(MOT_MOTOR_LEFT), MOT_DIR_FORWARD);
@@ -352,14 +364,99 @@ static void PiCo_Brumm_Brumm(void * pvParameters){
 			//vTaskDelay(del_i * 100 / portTICK_PERIOD_MS);
 			//vTaskDelay(10 / portTICK_PERIOD_MS);
 		}
-		vTaskDelay(5/portTICK_PERIOD_MS);
+		vTaskDelay(50/portTICK_PERIOD_MS);
 	}
 }
 #endif
+#define SPEED_LEFT speed_l
+#define SPEED_RIGHT speed_r
+#define TURN_TIME_90 300
+//#define SENS_THRESHOLD 50
+static void Soicheib(void * pvParameters){
+	(void)pvParameters;
+	uint8_t sumo = 0;
+	vTaskDelay(1000/portTICK_PERIOD_MS);
+	for(;;){
+		if(xSemaphoreTake(sem, 0) == pdTRUE){
+			sumo = !sumo;
+			if(sumo){
+				//start battle
+				for(uint8_t i = 0; i < 10; i++){
+					vTaskDelay(500/portTICK_PERIOD_MS);
+					BUZ_PlayTune(BUZ_TUNE_BUTTON);
+				}
+				//vTaskDelay(5000/portTICK_PERIOD_MS);
+				//todo: tof
+				DRV_SetSpeed(SPEED_LEFT, SPEED_RIGHT);
+				DRV_SetMode(DRV_MODE_SPEED);
+			} else {
+				//stop battle
+				DRV_SetMode(DRV_MODE_STOP);
+			}
+		}
+		if(sumo){
+			/*//battle
+			int16_t tof_val[4];
+			tof_val[0] = DIST_GetDistance(DIST_SENSOR_FRONT);
+			tof_val[1] = DIST_GetDistance(DIST_SENSOR_LEFT);
+			tof_val[2] = DIST_GetDistance(DIST_SENSOR_RIGHT);
+			tof_val[3] = DIST_GetDistance(DIST_SENSOR_REAR);
+			if(tof_val[1] != -1){
+				// turn left
+				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+				DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
+				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
+				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			} else if(tof_val[2] != -1){
+				// turn right
+				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+				DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
+				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			} else if(tof_val[3] != -1){
+				// turn 180
+				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+				DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				vTaskDelay(2*TURN_TIME_90/portTICK_PERIOD_MS);
+				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			}*/
+			uint16_t sens_val[REF_NOF_SENSORS];
+			uint8_t cnt;
+			REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
+			cnt = 0;
+			for(uint8_t i = 0; i < REF_NOF_SENSORS; i++){
+				if(sens_val[i] > SENS_THRESHOLD) cnt++;
+			}
+			if(cnt == REF_NOF_SENSORS){
+				// drive forward
+			} else if(sens_val[REF_NOF_SENSORS - 1] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < SENS_THRESHOLD){
+				// turn left
+				BUZ_PlayTune(BUZ_TUNE_BUTTON);
+				DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
+				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
+				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			} else if(sens_val[0] < SENS_THRESHOLD || sens_val[1] < SENS_THRESHOLD || sens_val[2] < SENS_THRESHOLD){
+				// turn right
+				BUZ_PlayTune(BUZ_TUNE_BUTTON);
+				DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
+				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			}
+		} else {
+			//wait
+		}
+		vTaskDelay(10/portTICK_PERIOD_MS);
+	}
+}
 
 void APP_Start(void) {
   PL_Init();
   APP_AdoptToHardware();
+  vSemaphoreCreateBinary(sem);
+  xSemaphoreTake(sem,0);
+  if(xTaskCreate(Soicheib, "Soicheib", configMINIMAL_STACK_SIZE + 500, (void *)NULL, tskIDLE_PRIORITY + 2, NULL) != pdPASS){
+	  for(;;); // error
+  }
 //#if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
 //	BaseType_t res = xTaskCreate(PiCo_Brumm_Brumm, "BrummBrumm", configMINIMAL_STACK_SIZE + 300,
 //			(void *) NULL, tskIDLE_PRIORITY, NULL);

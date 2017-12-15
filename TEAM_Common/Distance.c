@@ -38,6 +38,11 @@
   #include "TofCE3.h"
   #include "TofCE4.h"
 #endif
+#if PL_CONFIG_HAS_RTOS
+  #include "FRTOS1.h"
+  #include "RTOS.h"
+#include "task.h"
+#endif
 
 #if PL_HAS_TOF_SENSOR
 
@@ -631,7 +636,7 @@ static void TofTask(void *param) {
           vTaskDelay(pdMS_TO_TICKS(1000));
         }
       } while (res!=ERR_OK);
-      CLS1_SendStr((unsigned char*)"ToF enabled!\r\n", SHELL_GetStdio()->stdOut);
+      //CLS1_SendStr((unsigned char*)"ToF enabled!\r\n", SHELL_GetStdio()->stdOut);
       initDevices = FALSE;
     }
 #if 0
