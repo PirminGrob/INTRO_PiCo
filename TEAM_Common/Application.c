@@ -60,7 +60,7 @@
 #include "Distance.h"
 
 static xSemaphoreHandle sem = NULL;
-static int32_t speed_l = 0, speed_r = 0;
+static int32_t speed_l = 0, speed_r = 0, robo = 0;
 
 #if PL_CONFIG_HAS_EVENTS
 
@@ -240,6 +240,7 @@ if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* 23 */
 		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
 		speed_l = 3000;
 		speed_r = 3000;
+		robo = 2;
 	  } else if (KIN1_UIDSame(&id, &RoboIDs[1])) { /* L7 */
 	#if PL_CONFIG_HAS_QUADRATURE
 			(void)Q4CRight_SwapPins(TRUE);
@@ -247,8 +248,9 @@ if (KIN1_UIDSame(&id, &RoboIDs[0])) { /* 23 */
 	#endif
 		MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_LEFT), TRUE); /* invert left motor */
 		//MOT_Invert(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), TRUE); /* invert left motor */
-		speed_l = 1000;
+		speed_l = 3000;
 		speed_r = 3000;
+		robo=1;
 		}
 #endif
 #if PL_CONFIG_HAS_QUADRATURE && PL_CONFIG_BOARD_IS_ROBO_V2
@@ -368,10 +370,10 @@ static void PiCo_Brumm_Brumm(void * pvParameters){
 	}
 }
 #endif
-#define SPEED_LEFT speed_l
-#define SPEED_RIGHT speed_r
-#define TURN_TIME_90 300
-//#define SENS_THRESHOLD 50
+#define SOICHEIB_SPEED_LEFT 75
+#define SOICHEIB_SPEED_RIGHT 75
+#define SOICHEIB_TURN_TIME_90 300
+#define SOICHEIB_SENS_THRESHOLD 50
 static void Soicheib(void * pvParameters){
 	(void)pvParameters;
 	uint8_t sumo = 0;
@@ -383,15 +385,19 @@ static void Soicheib(void * pvParameters){
 				//start battle
 				for(uint8_t i = 0; i < 10; i++){
 					vTaskDelay(500/portTICK_PERIOD_MS);
-					BUZ_PlayTune(BUZ_TUNE_BUTTON);
+					//BUZ_PlayTune(BUZ_TUNE_BUTTON);
 				}
 				//vTaskDelay(5000/portTICK_PERIOD_MS);
 				//todo: tof
-				DRV_SetSpeed(SPEED_LEFT, SPEED_RIGHT);
-				DRV_SetMode(DRV_MODE_SPEED);
+				//DRV_SetSpeed(SPEED_LEFT, SPEED_RIGHT);
+				//DRV_SetMode(DRV_MODE_SPEED);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
 			} else {
 				//stop battle
-				DRV_SetMode(DRV_MODE_STOP);
+				//DRV_SetMode(DRV_MODE_STOP);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0);
 			}
 		}
 		if(sumo){
@@ -404,43 +410,144 @@ static void Soicheib(void * pvParameters){
 			if(tof_val[1] != -1){
 				// turn left
 				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
-				DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
+				//DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
 				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
-				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
 			} else if(tof_val[2] != -1){
 				// turn right
 				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
-				DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
 				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
-				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
 			} else if(tof_val[3] != -1){
 				// turn 180
 				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
-				DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
 				vTaskDelay(2*TURN_TIME_90/portTICK_PERIOD_MS);
-				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
 			}*/
 			uint16_t sens_val[REF_NOF_SENSORS];
 			uint8_t cnt;
 			REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
 			cnt = 0;
 			for(uint8_t i = 0; i < REF_NOF_SENSORS; i++){
-				if(sens_val[i] > SENS_THRESHOLD) cnt++;
+				if(sens_val[i] > SOICHEIB_SENS_THRESHOLD) cnt++;
 			}
 			if(cnt == REF_NOF_SENSORS){
 				// drive forward
-			} else if(sens_val[REF_NOF_SENSORS - 1] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < SENS_THRESHOLD){
+			} else if(sens_val[REF_NOF_SENSORS - 1] < SOICHEIB_SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < SOICHEIB_SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < SOICHEIB_SENS_THRESHOLD){
 				// turn left
 				BUZ_PlayTune(BUZ_TUNE_BUTTON);
-				DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
-				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
-				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
-			} else if(sens_val[0] < SENS_THRESHOLD || sens_val[1] < SENS_THRESHOLD || sens_val[2] < SENS_THRESHOLD){
+				//DRV_SetSpeed(-SPEED_LEFT*2,-SPEED_RIGHT/2);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -100);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -50);
+				vTaskDelay(250/portTICK_PERIOD_MS);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+			} else if(sens_val[0] < SOICHEIB_SENS_THRESHOLD || sens_val[1] < SOICHEIB_SENS_THRESHOLD || sens_val[2] < SOICHEIB_SENS_THRESHOLD){
 				// turn right
 				BUZ_PlayTune(BUZ_TUNE_BUTTON);
-				DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT/2,-SPEED_RIGHT*2);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -50);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -100);
+				vTaskDelay(250/portTICK_PERIOD_MS);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), SOICHEIB_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), SOICHEIB_SPEED_RIGHT);
+			}
+		} else {
+			//wait
+		}
+		vTaskDelay(10/portTICK_PERIOD_MS);
+	}
+}
+
+#define BUNDNER_SPEED_LEFT 75
+#define BUNDNER_SPEED_RIGHT 75
+#define BUNDNER_TURN_TIME_90 300
+#define BUNDNER_SENS_THRESHOLD 50
+static void bundner_bock(void * pvParameters){
+	(void)pvParameters;
+	uint8_t sumo = 0;
+	vTaskDelay(1000/portTICK_PERIOD_MS);
+	for(;;){
+		if(xSemaphoreTake(sem, 0) == pdTRUE){
+			sumo = !sumo;
+			if(sumo){
+				//start battle
+				for(uint8_t i = 0; i < 10; i++){
+					vTaskDelay(500/portTICK_PERIOD_MS);
+					//BUZ_PlayTune(BUZ_TUNE_BUTTON);
+				}
+				//vTaskDelay(5000/portTICK_PERIOD_MS);
+				//todo: tof
+				//DRV_SetSpeed(SPEED_LEFT, SPEED_RIGHT);
+				//DRV_SetMode(DRV_MODE_SPEED);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), BUNDNER_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), BUNDNER_SPEED_RIGHT);
+			} else {
+				//stop battle
+				//DRV_SetMode(DRV_MODE_STOP);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), 0);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), 0);
+			}
+		}
+		if(sumo){
+			/*//battle
+			int16_t tof_val[4];
+			tof_val[0] = DIST_GetDistance(DIST_SENSOR_FRONT);
+			tof_val[1] = DIST_GetDistance(DIST_SENSOR_LEFT);
+			tof_val[2] = DIST_GetDistance(DIST_SENSOR_RIGHT);
+			tof_val[3] = DIST_GetDistance(DIST_SENSOR_REAR);
+			if(tof_val[1] != -1){
+				// turn left
+				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+				//DRV_SetSpeed(-SPEED_LEFT,SPEED_RIGHT);
 				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
-				DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			} else if(tof_val[2] != -1){
+				// turn right
+				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+				//DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				vTaskDelay(TURN_TIME_90/portTICK_PERIOD_MS);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			} else if(tof_val[3] != -1){
+				// turn 180
+				BUZ_PlayTune(BUZ_TUNE_BUTTON_LONG);
+				//DRV_SetSpeed(SPEED_LEFT,-SPEED_RIGHT);
+				vTaskDelay(2*TURN_TIME_90/portTICK_PERIOD_MS);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+			}*/
+			uint16_t sens_val[REF_NOF_SENSORS];
+			uint8_t cnt;
+			REF_GetSensorValues(&sens_val[0], REF_NOF_SENSORS);
+			cnt = 0;
+			for(uint8_t i = 0; i < REF_NOF_SENSORS; i++){
+				if(sens_val[i] > BUNDNER_SENS_THRESHOLD) cnt++;
+			}
+			if(cnt == REF_NOF_SENSORS){
+				// drive forward
+			} else if(sens_val[REF_NOF_SENSORS - 1] < BUNDNER_SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 2] < BUNDNER_SENS_THRESHOLD || sens_val[REF_NOF_SENSORS - 3] < BUNDNER_SENS_THRESHOLD){
+				// turn left
+				BUZ_PlayTune(BUZ_TUNE_BUTTON);
+				//DRV_SetSpeed(-SPEED_LEFT*2,-SPEED_RIGHT/2);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -100);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -50);
+				vTaskDelay(250/portTICK_PERIOD_MS);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), BUNDNER_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), BUNDNER_SPEED_RIGHT);
+			} else if(sens_val[0] < BUNDNER_SENS_THRESHOLD || sens_val[1] < BUNDNER_SENS_THRESHOLD || sens_val[2] < BUNDNER_SENS_THRESHOLD){
+				// turn right
+				BUZ_PlayTune(BUZ_TUNE_BUTTON);
+				//DRV_SetSpeed(SPEED_LEFT/2,-SPEED_RIGHT*2);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), -50);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), -100);
+				vTaskDelay(250/portTICK_PERIOD_MS);
+				//DRV_SetSpeed(SPEED_LEFT,SPEED_RIGHT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_LEFT), BUNDNER_SPEED_LEFT);
+				MOT_SetSpeedPercent(MOT_GetMotorHandle(MOT_MOTOR_RIGHT), BUNDNER_SPEED_RIGHT);
 			}
 		} else {
 			//wait
@@ -454,8 +561,14 @@ void APP_Start(void) {
   APP_AdoptToHardware();
   vSemaphoreCreateBinary(sem);
   xSemaphoreTake(sem,0);
+  if(robo==1){
   if(xTaskCreate(Soicheib, "Soicheib", configMINIMAL_STACK_SIZE + 500, (void *)NULL, tskIDLE_PRIORITY + 2, NULL) != pdPASS){
 	  for(;;); // error
+  }
+  }else if(robo==2){
+  if(xTaskCreate(bundner_bock, "bundner bock", configMINIMAL_STACK_SIZE + 500, (void *)NULL, tskIDLE_PRIORITY + 2, NULL) != pdPASS){
+	  for(;;); // error
+  }
   }
 //#if PL_CONFIG_HAS_MOTOR && PL_CONFIG_HAS_REFLECTANCE
 //	BaseType_t res = xTaskCreate(PiCo_Brumm_Brumm, "BrummBrumm", configMINIMAL_STACK_SIZE + 300,

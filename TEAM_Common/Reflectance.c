@@ -511,7 +511,7 @@ static void REF_StateMachine(void) {
       }
     }
     #else
-      SHELL_SendString((unsigned char*)"INFO: No calibration data present.\r\n");
+      //SHELL_SendString((unsigned char*)"INFO: No calibration data present.\r\n");
       refState = REF_STATE_NOT_CALIBRATED;
     #endif
       break;
@@ -527,7 +527,7 @@ static void REF_StateMachine(void) {
       break;
     
     case REF_STATE_START_CALIBRATION:
-      SHELL_SendString((unsigned char*)"start calibration...\r\n");
+      //SHELL_SendString((unsigned char*)"start calibration...\r\n");
       for(i=0;i<REF_NOF_SENSORS;i++) {
         SensorCalibMinMax.minVal[i] = MAX_SENSOR_VALUE;
         SensorCalibMinMax.maxVal[i] = 0;
@@ -549,7 +549,7 @@ static void REF_StateMachine(void) {
       break;
     
     case REF_STATE_STOP_CALIBRATION:
-      SHELL_SendString((unsigned char*)"...stopping calibration.\r\n");
+      //SHELL_SendString((unsigned char*)"...stopping calibration.\r\n");
 #if PL_CONFIG_HAS_CONFIG_NVM
       if (NVMC_SaveReflectanceData(&SensorCalibMinMax, sizeof(SensorCalibMinMax))!=ERR_OK) {
         SHELL_SendString((unsigned char*)"Flashing calibration data FAILED!\r\n");

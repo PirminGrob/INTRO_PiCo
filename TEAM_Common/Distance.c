@@ -595,9 +595,9 @@ static uint8_t InitToF(void) {
     vTaskDelay(pdMS_TO_TICKS(100)); /* give some time to get it enabled */
     res = VL6180X_SetI2CDeviceAddress(&DIST_ToF_Devices[i]); /* set hardware I2C address */
     if (res!=ERR_OK) {
-      CLS1_SendStr((unsigned char*)"ERROR: Failed set i2C address of TOF device: ", SHELL_GetStdio()->stdErr);
-      CLS1_SendNum8u(i, SHELL_GetStdio()->stdErr);
-      CLS1_SendStr((unsigned char*)"\r\n", SHELL_GetStdio()->stdErr);
+      //CLS1_SendStr((unsigned char*)"ERROR: Failed set i2C address of TOF device: ", SHELL_GetStdio()->stdErr);
+      //CLS1_SendNum8u(i, SHELL_GetStdio()->stdErr);
+      //CLS1_SendStr((unsigned char*)"\r\n", SHELL_GetStdio()->stdErr);
       vTaskDelay(pdMS_TO_TICKS(1000)); /* delay for some time */
       return res;
     }
@@ -606,9 +606,9 @@ static uint8_t InitToF(void) {
   for(i=0;i<VL_NOF_DEVICES;i++) {
     res = VL6180X_InitAndConfigureDevice(&DIST_ToF_Devices[i]);
     if (res!=ERR_OK) {
-      CLS1_SendStr((unsigned char*)"ERROR: Failed init of TOF device: ", SHELL_GetStdio()->stdErr);
-      CLS1_SendNum8u(i, SHELL_GetStdio()->stdErr);
-      CLS1_SendStr((unsigned char*)"\r\n", SHELL_GetStdio()->stdErr);
+      //CLS1_SendStr((unsigned char*)"ERROR: Failed init of TOF device: ", SHELL_GetStdio()->stdErr);
+      //CLS1_SendNum8u(i, SHELL_GetStdio()->stdErr);
+      //CLS1_SendStr((unsigned char*)"\r\n", SHELL_GetStdio()->stdErr);
       return res;
     }
   }
@@ -632,7 +632,7 @@ static void TofTask(void *param) {
         vTaskDelay(pdMS_TO_TICKS(100));
         res = InitToF();
         if (res!=ERR_OK) {
-          CLS1_SendStr((unsigned char*)"ToF init failed, retry....!\r\n", SHELL_GetStdio()->stdErr);
+          //CLS1_SendStr((unsigned char*)"ToF init failed, retry....!\r\n", SHELL_GetStdio()->stdErr);
           vTaskDelay(pdMS_TO_TICKS(1000));
         }
       } while (res!=ERR_OK);
@@ -661,7 +661,7 @@ static void TofTask(void *param) {
 
       res = VL6180X_ReadRangeSingleMultiple(&DIST_ToF_Devices[0], &range[0], VL_NOF_DEVICES);
       if (res!=ERR_OK) {
-        CLS1_SendStr((unsigned char*)"Read ToF FAILED!\r\n", SHELL_GetStdio()->stdErr);
+        //CLS1_SendStr((unsigned char*)"Read ToF FAILED!\r\n", SHELL_GetStdio()->stdErr);
         errCntr++;
         initDevices = TRUE; /* re-init devices */
       }
